@@ -3,10 +3,12 @@
 
 const byte interruptPin = 2;
 const byte modo=0;
-uint8_t MSGCAN[12];
 volatile uint32_t tiempostamp=0;
 const byte numPIDs=5;
 uint8_t PIDs[numPIDs]={0x10, 0x0B, 0X0F, 0X44, 0x0C};
+
+uint8_t data[3];
+
 
 struct can_frame canMsgOBD2; //escribir obd2 (por supuesto obd2 esta sobre can)
 struct can_frame canMsg; //leer can
@@ -18,6 +20,7 @@ void setup() {
   mcp2515.reset();
   mcp2515.setBitrate(CAN_500KBPS, MCP_8MHZ);
   mcp2515.setNormalMode();
+
 
   canMsgOBD2.can_id  = 0x7DF;
   canMsgOBD2.can_dlc = 8;
@@ -72,8 +75,9 @@ void OBD2(){
 }
 
 void send2ESP(){
-    Serial.write(canMsg.data[2]);
-    Serial.write(canMsg.data[3]);
-    Serial.write(canMsg.data[4]);
-    mcp2515.clearRXnOVR();
+  data[0] = canMsg.data[2];
+  data[1] = canMsg.data[3];
+  data[2] = canMsg.data[4];
+  Serial.write(data,3);
+  mcp2515.clearRXnOVR();
 }

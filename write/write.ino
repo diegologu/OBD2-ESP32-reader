@@ -15,8 +15,6 @@ byte i;
 
 
 void setup() {
-  //pinMode(interruptPin, INPUT_PULLUP);
-  //attachInterrupt(digitalPinToInterrupt(interruptPin), OBD2, LOW);
 
   can_rpm.can_id  = 0x7E8;
   can_rpm.can_dlc = 8;
@@ -62,40 +60,12 @@ void setup() {
 }
 
 void loop() {
-
+  msg[i].data[3]++;
   mcp2515.sendMessage(&msg[i]);
-  Serial.println(msg[i].data[2]);
+  Serial.println(msg[i].data[3]);
   i++;
   if (i>2) {
     i=0;
   }
-  delay(1000);
-
-  //mcp2515.sendMessage(&can_v);
-  //Serial.println("Sent v");
-  //delay(50);
-  //mcp2515.sendMessage(&can_t);
-  //Serial.println("Sent t");
-  //delay(50);
-  //mcp2515.sendMessage(&can_rpm);
-  //Serial.println("Sent rpm");
-  //delay(50);
-}
-
-void OBD2(){
-  if (mcp2515.readMessage(&request) == MCP2515::ERROR_OK) {
-    if (request.can_id==0x7DF){
-      switch (request.data[2]) {
-        case 0x0C://rpm
-        mcp2515.sendMessage(&can_rpm);
-        break;
-        case 0x0D://vel
-        mcp2515.sendMessage(&can_v);
-        break;
-        case 0x5C://temp
-        mcp2515.sendMessage(&can_t);
-        break;
-      }
-    }
-  }
+  delay(2000);
 }
