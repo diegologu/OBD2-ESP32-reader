@@ -3,7 +3,7 @@
 
 const byte interruptPin = 2;
 const byte modo=0;
-uint8_t MSGCAN[16];
+uint8_t MSGCAN[12];
 volatile uint32_t tiempostamp=0;
 const byte numPIDs=5;
 uint8_t PIDs[numPIDs]={0x10, 0x0B, 0X0F, 0X44, 0x0C};
@@ -59,42 +59,21 @@ ISR(TIMER2_OVF_vect) {
 
 void snifeer(){
   if (mcp2515.readMessage(&canMsg) == MCP2515::ERROR_OK) {
-    fillMSGCAN();
+    send2ESP();
   }
 }
 
 void OBD2(){
   if (mcp2515.readMessage(&canMsg) == MCP2515::ERROR_OK) {
     if (canMsg.can_id==0x7E8){
-      fillMSGCAN();
+      send2ESP();
     }
   }
 }
 
-void fillMSGCAN(){
-
-    tiempostamp=millis(); //meter el timestamp al vector MSGCAN 32 bits
-    MSGCAN[3]=tiempostamp; //primer byte del millis
-    MSGCAN[2]=tiempostamp>>8; //segundo byte millis
-    MSGCAN[1]=tiempostamp>>16; //tercer byte millis
-    MSGCAN[0]=tiempostamp>>24; //último byte millis
-
-    MSGCAN[5]=canMsg.can_id; //parte baja ID
-    MSGCAN[4]=canMsg.can_id>>8; //parte alta ID
-
-    MSGCAN[6]=canMsg.data[0]; //meter los 8bytes del campo de datos al vector MSGCAN
-    MSGCAN[7]=canMsg.data[1];
-    MSGCAN[8]=canMsg.data[2];
-    MSGCAN[9]=canMsg.data[3];
-    MSGCAN[10]=canMsg.data[4];
-    MSGCAN[11]=canMsg.data[5];
-    MSGCAN[12]=canMsg.data[6];
-    MSGCAN[13]=canMsg.data[7];
-    MSGCAN[14]=13;
-    MSGCAN[15]=10; //para el enter del mensaje
-
-    Serial.write(MSGCAN[8]);
-    Serial.write(MSGCAN[9]);
-    Serial.write(MSGCAN[10]);
+void send2ESP(){
+    Serial.write(canMsg.data[2]);
+    Serial.write(canMsg.data[3]);
+    Serial.write(canMsg.data[4]);
     mcp2515.clearRXnOVR();
 }
